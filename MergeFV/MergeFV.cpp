@@ -8,7 +8,12 @@
 #include <cmath>
 using namespace std;
 
-bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, const string& outFile) {
+bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights_, const string& outFile) {
+	vector<double> inWeights = inWeights_;
+	if (inWeights.empty())
+		for (size_t i = 0; i < inFiles.size(); i++)
+			inWeights.push_back(1.0 / inFiles.size());
+
 	vector<ifstream> ifsList;
 	for (const auto& path : inFiles)
 		ifsList.emplace_back(ifstream(path, ios_base::binary));
@@ -21,6 +26,8 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 		cerr << "エラー: 出力ファイルの読み込みに失敗: " << strerror(errno) << endl;
 		return false;
 	}
+
+	cout << "マージ中 . . ." << endl;
 
 	struct Stat
 	{
@@ -68,6 +75,11 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 	}
 
 	cout << fixed;
+	cout << "入力ファイル:" << endl;
+	for (auto& path : inFiles)
+		cout << "    " << path << endl;
+	cout << "出力ファイル:  " << outFile << endl;
+	cout << "要素数:        " << elementCount << endl;
 	cout << "差の平均:              ";
 	for (auto& stat : stats)
 		cout << " " << setw(10) << setprecision(3) << stat.sumDiff / elementCount;
@@ -88,7 +100,7 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 	for (auto& stat : stats)
 		cout << " " << setw(10) << stat.diffMax;
 	cout << endl;
-	cout << endl;
+	cout << "マージ完了" << endl;
 	return true;
 }
 
@@ -145,9 +157,6 @@ int main(int argc, char* argv[]) {
 	}
 	string outFile = files.back();
 	files.pop_back();
-	if (!hasInWeights)
-		for (size_t i = 0; i < files.size(); i++)
-			inWeights.push_back(1.0 / files.size());
 
 	// 処理
 	return MergeFV(files, inWeights, outFile) ? 0 : 2;
