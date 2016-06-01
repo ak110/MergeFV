@@ -1,19 +1,24 @@
 MergeFV
-===========
-2つの重みファイル(Bonanzaのfv.binのような2バイト符号付整数値が連続で記録されたバイナリファイル)の重み付き加算を行うコマンドラインツールです。
+=======
+
+重みファイル(Bonanzaのfv.binのような2バイト符号付整数値が連続で記録されたバイナリファイル)の重み付き加算を行うコマンドラインツールです。
 エラー時も出力ファイルが半端な状態で残るなど、いろいろ適当実装なので悪しからず。
+
 
 使い方
 ----
-    MergeFV FromDir1 Weight1 FromDir2 Weight2 ToDir FileNames
+    MergeFV [options] InFile1 [InFile2 ...] OutFile
 
-* FromDir1,2 入力元のフォルダパス
-* Weight1,2  それぞれの入力元の重み(浮動小数点数)
-* ToDir      重み付き加算結果の出力先のフォルダパス
-* FileNames  ファイル名をカンマ区切りで指定
+* InFile     入力元のファイルパス
+* OutFile    出力先のファイルパス
+
+* -w 重み     各入力の重みを実数のカンマ区切りで指定する。省略時は1.0/入力ファイル数になる。(通常の算術平均)
+
 
 例
 ----
-    MergeFV dir1 0.3 dir2 0.7 result KKP.bin,KPP.bin
+    MergeFV -w 0.3,0.7 FV1.bin FV2.bin result.bin
 
-dir1/KKP.binの各要素の値に0.3を掛けたものとdir2/KKP.binの各要素の値に0.7を掛けたものの和(端数は四捨五入)を、result/KKP.binに出力します。同様にKPP.binも。
+FV1.binの各要素の値に0.3を掛けたものと
+FV2.binの各要素の値に0.7を掛けたものの和(端数は四捨五入)を、
+result.binに出力。

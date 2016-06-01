@@ -1,5 +1,4 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iomanip>
 #include <iostream>
@@ -8,87 +7,149 @@
 #include <array>
 #include <cmath>
 using namespace std;
-using namespace boost;
 
-bool MergeFV(const string& name, const string& fromDir1, double w1, const string& fromDir2, double w2, const string& toDir) {
-	cout << "**************************************" << name << "**************************************" << endl;
-
-	ifstream ifs1(fromDir1 + "/" + name, ios_base::binary);
-	ifstream ifs2(fromDir2 + "/" + name, ios_base::binary);
-	if (!ifs1 || !ifs2) {
-			cerr << "エラー: 入力ファイルの読み込みに失敗: " << strerror(errno) << endl;
+bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, const string& outFile) {
+	vector<ifstream> ifsList;
+	for (const auto& path : inFiles)
+		ifsList.emplace_back(ifstream(path, ios_base::binary));
+	if (!all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::good, placeholders::_1))) {
+		cerr << "エラー: 入力ファイルの読み込みに失敗: " << strerror(errno) << endl;
 		return false;
 	}
-	ofstream ofs(toDir + "/" + name, ios_base::binary);
+	ofstream ofs(outFile, ios_base::binary);
+	if (!ofs) {
+		cerr << "エラー: 出力ファイルの読み込みに失敗: " << strerror(errno) << endl;
+		return false;
+	}
+
+	struct Stat
+	{
+		double sumDiff = 0, sumAbsDiff = 0, sumSqDiff = 0;
+		int diffMin = +65536, diffMax = -65536;
+	};
+	vector<Stat> stats(inFiles.size());
+	vector<int16_t> values(inFiles.size());
 
 	size_t elementCount = 0;
-	double sumDiff = 0, sumAbsDiff = 0, sumSqDiff = 0;
-	int diffMin = +65536, diffMax = -65536;
 	for (; ; elementCount++) {
-		int16_t value1, value2;
-		ifs1.read((char*)&value1, sizeof(value1));
-		ifs2.read((char*)&value2, sizeof(value2));
-		if (ifs1.eof() && ifs2.eof())
+		for (size_t i = 0; i < inFiles.size(); i++)
+			ifsList[i].read((char*)&values[i], sizeof values[i]);
+		if (all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::eof, placeholders::_1)))
 			break;
-		if (ifs1.eof() || ifs2.eof()) {
-			cerr << "エラー: 2つの入力ファイルのサイズの不一致" << endl;
+		if (any_of(ifsList.begin(), ifsList.end(), bind(&ifstream::eof, placeholders::_1))) {
+			cerr << "エラー: 入力ファイルのサイズ不一致" << endl;
 			return false;
 		}
-		if (!ifs1 || !ifs2) {
+		if (!all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::good, placeholders::_1))) {
 			cerr << "エラー: 読み込み失敗: " << strerror(errno) << endl;
 			return false;
 		}
 
-		// 入力2個の差異について色々統計情報を算出する
-		auto d = (int)value2 - (int)value1;
-		sumDiff += d;
-		sumAbsDiff += abs(d);
-		sumSqDiff += d * d;
-		if (d < diffMin) diffMin = d;
-		if (diffMax < d) diffMax = d;
+		double result = 0;
+		for (size_t i = 0; i < values.size(); i++)
+			result += values[i] * inWeights[i];
+		int16_t result16 =
+			INT16_MAX <= result ? INT16_MAX :
+			result <= -INT16_MAX ? INT16_MAX :
+			(int16_t)round(result);
 
-		// 入力2個の平均を出力する
-		int16_t outValue = (int16_t)round(value1 * w1 + value2 * w2);
-		ofs.write((const char*)&outValue, sizeof(outValue));
+		// 入力と結果の差異について色々統計情報を算出する
+		for (size_t i = 0; i < values.size(); i++) {
+			auto d = (int)result16 - (int)values[i];
+			stats[i].sumDiff += d;
+			stats[i].sumAbsDiff += abs(d);
+			stats[i].sumSqDiff += d * d;
+			if (d < stats[i].diffMin) stats[i].diffMin = d;
+			if (stats[i].diffMax < d) stats[i].diffMax = d;
+		}
+
+		// 出力
+		ofs.write((const char*)&result16, sizeof result16);
 	}
 
 	cout << fixed;
-	cout << "差の平均:               " << setw(10) << setprecision(3) << sumDiff / elementCount << endl;
-	cout << "差の絶対値の平均:       " << setw(10) << setprecision(1) << sumAbsDiff / elementCount << endl;
-	cout << "差の二乗の平均の平方根: " << setw(10) << setprecision(1) << sqrt(sumSqDiff / elementCount) << endl;
-	cout << "差の最大値:             " << setw(10) << diffMin << endl;
-	cout << "差の最小値:             " << setw(10) << diffMax << endl;
+	cout << "差の平均:              ";
+	for (auto& stat : stats)
+		cout << " " << setw(10) << setprecision(3) << stat.sumDiff / elementCount;
+	cout << endl;
+	cout << "差の絶対値の平均:      ";
+	for (auto& stat : stats)
+		cout << " " << setw(10) << setprecision(1) << stat.sumAbsDiff / elementCount;
+	cout << endl;
+	cout << "差の二乗平均平方根:    ";
+	for (auto& stat : stats)
+		cout << " " << setw(10) << setprecision(1) << sqrt(stat.sumSqDiff / elementCount);
+	cout << endl;
+	cout << "差の最大値:            ";
+	for (auto& stat : stats)
+		cout << " " << setw(10) << stat.diffMin;
+	cout << endl;
+	cout << "差の最小値:            ";
+	for (auto& stat : stats)
+		cout << " " << setw(10) << stat.diffMax;
+	cout << endl;
 	cout << endl;
 	return true;
 }
 
+void Usage() {
+	cerr << "usage: MergeFV [options] InFile1 [InFile2 ...] OutFile" << endl;
+	cerr << endl;
+	cerr << "複数の重みファイル(Bonanzaのfv.binのような2バイト符号付整数値が" << endl;
+	cerr << "連続で記録されたバイナリファイル)の重み付き加算を行います。" << endl;
+	cerr << endl;
+	cerr << "    InFile     入力元のファイルパス" << endl;
+	cerr << "    OutFile    出力先のファイルパス" << endl;
+	cerr << endl;
+	cerr << "    -w 重み     各入力の重みを実数のカンマ区切りで指定する。省略時は1.0/入力ファイル数になる。(通常の算術平均)" << endl;
+	cerr << endl;
+	cerr << "  例：MergeFV -w 0.3,0.7 FV1.bin FV2.bin result.bin" << endl;
+	cerr << "    ⇒ FV1.binの各要素の値に0.3を掛けたものと" << endl;
+	cerr << "       FV2.binの各要素の値に0.7を掛けたものの和(端数は四捨五入)を、" << endl;
+	cerr << "       result.binに出力。" << endl;
+}
+
 int main(int argc, char* argv[]) {
-	vector<string> args(argv + 1, argv + argc);
-	if (args.size() != 6) {
-		cerr << "usage: MergeFV FromDir1 Weight1 FromDir2 Weight2 ToDir FileNames" << endl;
-		cerr << endl;
-		cerr << "2つの重みファイル(Bonanzaのfv.binのような2バイト符号付整数値が" << endl;
-		cerr << "連続で記録されたバイナリファイル)の重み付き加算を行います。" << endl;
-		cerr << endl;
-		cerr << "    FromDir1,2 入力元のフォルダパス" << endl;
-		cerr << "    Weight1,2  それぞれの入力元の重み(浮動小数点数)" << endl;
-		cerr << "    ToDir      重み付き加算結果の出力先のフォルダパス" << endl;
-		cerr << "    FileNames  ファイル名をカンマ区切りで指定" << endl;
-		cerr << endl;
-		cerr << "  例：MergeFV dir1 0.3 dir2 0.7 result KKP.bin,KPP.bin" << endl;
-		cerr << "    ⇒ dir1/KKP.binの各要素の値に0.3を掛けたものと" << endl;
-		cerr << "       dir2/KKP.binの各要素の値に0.7を掛けたものの和(端数は四捨五入)を、" << endl;
-		cerr << "       result/KKP.binに出力します。同様にKPP.binも。" << endl;
-		return 1;
+	vector<string> files;
+	vector<double> inWeights;
+	bool hasInWeights = false;
+	{
+		vector<string> args(argv + 1, argv + argc);
+		for (size_t i = 0; i < args.size(); i++) {
+			if (args[i] == "-w") {
+				i++;
+				if (args.size() <= i) {
+					cerr << "不正なオプション: " << args[i - 1] << endl;
+					Usage();
+					return 1;
+				}
+				hasInWeights = true;
+				vector<string> sp;
+				boost::split(sp, args[i], boost::is_any_of(","));
+				for (auto s : sp)
+					inWeights.push_back(stod(s));
+			} else {
+				files.push_back(args[i]);
+			}
+		}
+		if (files.size() < 2) {
+			cerr << "不正なオプション: 入力ファイルと出力ファイルが未指定" << endl;
+			Usage();
+			return 1;
+		}
+		if (hasInWeights && inWeights.size() != files.size() - 1) {
+			cerr << "不正なオプション: 入力ファイル数と重み(-w)の数が不一致" << endl;
+			Usage();
+			return 1;
+		}
 	}
-	vector<string> names;
-	split(names, args[5], is_any_of(" ,"));
-	for (auto name : names) {
-		if (!MergeFV(name,
-			args[0], lexical_cast<double>(args[1]),
-			args[2], lexical_cast<double>(args[3]), args[4]))
-			return 2;
-	}
-	return 0;
+	string outFile = files.back();
+	files.pop_back();
+	if (!hasInWeights)
+		for (size_t i = 0; i < files.size(); i++)
+			inWeights.push_back(1.0 / files.size());
+
+	// 処理
+	return MergeFV(files, inWeights, outFile) ? 0 : 2;
 }
 
