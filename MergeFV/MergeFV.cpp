@@ -14,9 +14,9 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights_, co
 		for (size_t i = 0; i < inFiles.size(); i++)
 			inWeights.push_back(1.0 / inFiles.size());
 
-	vector<ifstream> ifsList;
+	vector<unique_ptr<ifstream>> ifsList;
 	for (const auto& path : inFiles)
-		ifsList.emplace_back(ifstream(path, ios_base::binary));
+		ifsList.emplace_back(new ifstream(path, ios_base::binary));
 	if (!all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::good, placeholders::_1))) {
 		cerr << "エラー: 入力ファイルの読み込みに失敗: " << strerror(errno) << endl;
 		return false;
@@ -40,7 +40,7 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights_, co
 	size_t elementCount = 0;
 	for (; ; elementCount++) {
 		for (size_t i = 0; i < inFiles.size(); i++)
-			ifsList[i].read((char*)&values[i], sizeof values[i]);
+			ifsList[i]->read((char*)&values[i], sizeof values[i]);
 		if (all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::eof, placeholders::_1)))
 			break;
 		if (any_of(ifsList.begin(), ifsList.end(), bind(&ifstream::eof, placeholders::_1))) {
