@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+ï»¿#define _CRT_SECURE_NO_WARNINGS
 #include <boost/algorithm/string.hpp>
 #include <iomanip>
 #include <iostream>
@@ -13,12 +13,12 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 	for (const auto& path : inFiles)
 		ifsList.emplace_back(ifstream(path, ios_base::binary));
 	if (!all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::good, placeholders::_1))) {
-		cerr << "ƒGƒ‰[: “ü—Íƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s: " << strerror(errno) << endl;
+		cerr << "ã‚¨ãƒ©ãƒ¼: å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—: " << strerror(errno) << endl;
 		return false;
 	}
 	ofstream ofs(outFile, ios_base::binary);
 	if (!ofs) {
-		cerr << "ƒGƒ‰[: o—Íƒtƒ@ƒCƒ‹‚Ì“Ç‚Ýž‚Ý‚ÉŽ¸”s: " << strerror(errno) << endl;
+		cerr << "ã‚¨ãƒ©ãƒ¼: å‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—: " << strerror(errno) << endl;
 		return false;
 	}
 
@@ -37,11 +37,11 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 		if (all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::eof, placeholders::_1)))
 			break;
 		if (any_of(ifsList.begin(), ifsList.end(), bind(&ifstream::eof, placeholders::_1))) {
-			cerr << "ƒGƒ‰[: “ü—Íƒtƒ@ƒCƒ‹‚ÌƒTƒCƒY•sˆê’v" << endl;
+			cerr << "ã‚¨ãƒ©ãƒ¼: å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚µã‚¤ã‚ºä¸ä¸€è‡´" << endl;
 			return false;
 		}
 		if (!all_of(ifsList.begin(), ifsList.end(), bind(&ifstream::good, placeholders::_1))) {
-			cerr << "ƒGƒ‰[: “Ç‚Ýž‚ÝŽ¸”s: " << strerror(errno) << endl;
+			cerr << "ã‚¨ãƒ©ãƒ¼: èª­ã¿è¾¼ã¿å¤±æ•—: " << strerror(errno) << endl;
 			return false;
 		}
 
@@ -53,7 +53,7 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 			result <= -INT16_MAX ? INT16_MAX :
 			(int16_t)round(result);
 
-		// “ü—Í‚ÆŒ‹‰Ê‚Ì·ˆÙ‚É‚Â‚¢‚ÄFX“Œvî•ñ‚ðŽZo‚·‚é
+		// å…¥åŠ›ã¨çµæžœã®å·®ç•°ã«ã¤ã„ã¦è‰²ã€…çµ±è¨ˆæƒ…å ±ã‚’ç®—å‡ºã™ã‚‹
 		for (size_t i = 0; i < values.size(); i++) {
 			auto d = (int)result16 - (int)values[i];
 			stats[i].sumDiff += d;
@@ -63,28 +63,28 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 			if (stats[i].diffMax < d) stats[i].diffMax = d;
 		}
 
-		// o—Í
+		// å‡ºåŠ›
 		ofs.write((const char*)&result16, sizeof result16);
 	}
 
 	cout << fixed;
-	cout << "·‚Ì•½‹Ï:              ";
+	cout << "å·®ã®å¹³å‡:              ";
 	for (auto& stat : stats)
 		cout << " " << setw(10) << setprecision(3) << stat.sumDiff / elementCount;
 	cout << endl;
-	cout << "·‚Ìâ‘Î’l‚Ì•½‹Ï:      ";
+	cout << "å·®ã®çµ¶å¯¾å€¤ã®å¹³å‡:      ";
 	for (auto& stat : stats)
 		cout << " " << setw(10) << setprecision(1) << stat.sumAbsDiff / elementCount;
 	cout << endl;
-	cout << "·‚Ì“ñæ•½‹Ï•½•ûª:    ";
+	cout << "å·®ã®äºŒä¹—å¹³å‡å¹³æ–¹æ ¹:    ";
 	for (auto& stat : stats)
 		cout << " " << setw(10) << setprecision(1) << sqrt(stat.sumSqDiff / elementCount);
 	cout << endl;
-	cout << "·‚ÌÅ‘å’l:            ";
+	cout << "å·®ã®æœ€å¤§å€¤:            ";
 	for (auto& stat : stats)
 		cout << " " << setw(10) << stat.diffMin;
 	cout << endl;
-	cout << "·‚ÌÅ¬’l:            ";
+	cout << "å·®ã®æœ€å°å€¤:            ";
 	for (auto& stat : stats)
 		cout << " " << setw(10) << stat.diffMax;
 	cout << endl;
@@ -95,18 +95,18 @@ bool MergeFV(const vector<string>& inFiles, const vector<double>& inWeights, con
 void Usage() {
 	cerr << "usage: MergeFV [options] InFile1 [InFile2 ...] OutFile" << endl;
 	cerr << endl;
-	cerr << "•¡”‚Ìd‚Ýƒtƒ@ƒCƒ‹(Bonanza‚Ìfv.bin‚Ì‚æ‚¤‚È2ƒoƒCƒg•„†•t®”’l‚ª" << endl;
-	cerr << "˜A‘±‚Å‹L˜^‚³‚ê‚½ƒoƒCƒiƒŠƒtƒ@ƒCƒ‹)‚Ìd‚Ý•t‚«‰ÁŽZ‚ðs‚¢‚Ü‚·B" << endl;
+	cerr << "è¤‡æ•°ã®é‡ã¿ãƒ•ã‚¡ã‚¤ãƒ«(Bonanzaã®fv.binã®ã‚ˆã†ãª2ãƒã‚¤ãƒˆç¬¦å·ä»˜æ•´æ•°å€¤ãŒ" << endl;
+	cerr << "é€£ç¶šã§è¨˜éŒ²ã•ã‚ŒãŸãƒã‚¤ãƒŠãƒªãƒ•ã‚¡ã‚¤ãƒ«)ã®é‡ã¿ä»˜ãåŠ ç®—ã‚’è¡Œã„ã¾ã™ã€‚" << endl;
 	cerr << endl;
-	cerr << "    InFile     “ü—ÍŒ³‚Ìƒtƒ@ƒCƒ‹ƒpƒX" << endl;
-	cerr << "    OutFile    o—Íæ‚Ìƒtƒ@ƒCƒ‹ƒpƒX" << endl;
+	cerr << "    InFile     å…¥åŠ›å…ƒã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹" << endl;
+	cerr << "    OutFile    å‡ºåŠ›å…ˆã®ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹" << endl;
 	cerr << endl;
-	cerr << "    -w d‚Ý     Še“ü—Í‚Ìd‚Ý‚ðŽÀ”‚ÌƒJƒ“ƒ}‹æØ‚è‚ÅŽw’è‚·‚éBÈ—ªŽž‚Í1.0/“ü—Íƒtƒ@ƒCƒ‹”‚É‚È‚éB(’Êí‚ÌŽZp•½‹Ï)" << endl;
+	cerr << "    -w é‡ã¿     å„å…¥åŠ›ã®é‡ã¿ã‚’å®Ÿæ•°ã®ã‚«ãƒ³ãƒžåŒºåˆ‡ã‚Šã§æŒ‡å®šã™ã‚‹ã€‚çœç•¥æ™‚ã¯1.0/å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«æ•°ã«ãªã‚‹ã€‚(é€šå¸¸ã®ç®—è¡“å¹³å‡)" << endl;
 	cerr << endl;
-	cerr << "  —áFMergeFV -w 0.3,0.7 FV1.bin FV2.bin result.bin" << endl;
-	cerr << "    Ë FV1.bin‚ÌŠe—v‘f‚Ì’l‚É0.3‚ðŠ|‚¯‚½‚à‚Ì‚Æ" << endl;
-	cerr << "       FV2.bin‚ÌŠe—v‘f‚Ì’l‚É0.7‚ðŠ|‚¯‚½‚à‚Ì‚Ì˜a(’[”‚ÍŽlŽÌŒÜ“ü)‚ðA" << endl;
-	cerr << "       result.bin‚Éo—ÍB" << endl;
+	cerr << "  ä¾‹ï¼šMergeFV -w 0.3,0.7 FV1.bin FV2.bin result.bin" << endl;
+	cerr << "    â‡’ FV1.binã®å„è¦ç´ ã®å€¤ã«0.3ã‚’æŽ›ã‘ãŸã‚‚ã®ã¨" << endl;
+	cerr << "       FV2.binã®å„è¦ç´ ã®å€¤ã«0.7ã‚’æŽ›ã‘ãŸã‚‚ã®ã®å’Œ(ç«¯æ•°ã¯å››æ¨äº”å…¥)ã‚’ã€" << endl;
+	cerr << "       result.binã«å‡ºåŠ›ã€‚" << endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
 			if (args[i] == "-w") {
 				i++;
 				if (args.size() <= i) {
-					cerr << "•s³‚ÈƒIƒvƒVƒ‡ƒ“: " << args[i - 1] << endl;
+					cerr << "ä¸æ­£ãªã‚ªãƒ—ã‚·ãƒ§ãƒ³: " << args[i - 1] << endl;
 					Usage();
 					return 1;
 				}
@@ -133,12 +133,12 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		if (files.size() < 2) {
-			cerr << "•s³‚ÈƒIƒvƒVƒ‡ƒ“: “ü—Íƒtƒ@ƒCƒ‹‚Æo—Íƒtƒ@ƒCƒ‹‚ª–¢Žw’è" << endl;
+			cerr << "ä¸æ­£ãªã‚ªãƒ—ã‚·ãƒ§ãƒ³: å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã¨å‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«ãŒæœªæŒ‡å®š" << endl;
 			Usage();
 			return 1;
 		}
 		if (hasInWeights && inWeights.size() != files.size() - 1) {
-			cerr << "•s³‚ÈƒIƒvƒVƒ‡ƒ“: “ü—Íƒtƒ@ƒCƒ‹”‚Æd‚Ý(-w)‚Ì”‚ª•sˆê’v" << endl;
+			cerr << "ä¸æ­£ãªã‚ªãƒ—ã‚·ãƒ§ãƒ³: å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«æ•°ã¨é‡ã¿(-w)ã®æ•°ãŒä¸ä¸€è‡´" << endl;
 			Usage();
 			return 1;
 		}
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 		for (size_t i = 0; i < files.size(); i++)
 			inWeights.push_back(1.0 / files.size());
 
-	// ˆ—
+	// å‡¦ç†
 	return MergeFV(files, inWeights, outFile) ? 0 : 2;
 }
 
