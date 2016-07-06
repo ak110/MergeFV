@@ -17,6 +17,10 @@ MergeFV
 
 例
 ----
+    MergeFV FV1.bin FV2.bin result.bin
+
+FV1.binとFV2.binの各要素の平均をresult.binに出力。
+
     MergeFV -w 0.3,0.7 FV1.bin FV2.bin result.bin
 
 FV1.binの各要素の値に0.3を掛けたものと
