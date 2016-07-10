@@ -1,5 +1,6 @@
 MergeFV
 =======
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 重みファイル(Bonanzaのfv.binのような2バイト符号付整数値が連続で記録されたバイナリファイル)の重み付き加算を行うコマンドラインツールです。
 エラー時も出力ファイルが半端な状態で残るなど、いろいろ適当実装なので悪しからず。
