@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MergeFV", "MergeFV\MergeFV.vcxproj", "{007B3A8C-BA0A-44B5-8A81-3AE3A6C55405}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CompareFV", "CompareFV\CompareFV.vcxproj", "{8497ED73-0536-41CA-AD68-A23488BBA5CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{007B3A8C-BA0A-44B5-8A81-3AE3A6C55405}.Debug|x64.Build.0 = Debug|x64
 		{007B3A8C-BA0A-44B5-8A81-3AE3A6C55405}.Release|x64.ActiveCfg = Release|x64
 		{007B3A8C-BA0A-44B5-8A81-3AE3A6C55405}.Release|x64.Build.0 = Release|x64
+		{8497ED73-0536-41CA-AD68-A23488BBA5CB}.Debug|x64.ActiveCfg = Debug|x64
+		{8497ED73-0536-41CA-AD68-A23488BBA5CB}.Debug|x64.Build.0 = Debug|x64
+		{8497ED73-0536-41CA-AD68-A23488BBA5CB}.Release|x64.ActiveCfg = Release|x64
+		{8497ED73-0536-41CA-AD68-A23488BBA5CB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
